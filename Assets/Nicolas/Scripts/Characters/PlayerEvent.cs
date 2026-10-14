@@ -1,5 +1,5 @@
-using Arena.Characters;
 using Nicolas.Arena.Characters;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -30,6 +30,8 @@ namespace Nicolas.Arena.Interactions
         [SerializeField] private Settings _settings;
 
         [Tooltip("Actions raised for the player: heal, ammo, sound, hide this object...")]
+        [SerializeField] private Transform _TpPoints;
+        [SerializeField] private float _Angle;
         [SerializeField] private UnityEvent _onPlayer;
 
         private bool _isListening;
@@ -84,12 +86,19 @@ namespace Nicolas.Arena.Interactions
             if (Player.Instance != null)
                 Player.Instance.OnInteract -= HandleInteract;
 
-        _isListening = false;
+            _isListening = false;
         }
 
         private void HandleInteract()
         {
             _onPlayer.Invoke();
+        }
+        
+        public void Teleports()
+        {
+            new Vector4(_TpPoints.position.x, _TpPoints.position.y, _TpPoints.position.z, _Angle);
+            Player.Instance.Teleport(_TpPoints);
+            StopListening();
         }
 
         #endregion
