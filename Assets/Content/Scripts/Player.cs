@@ -1,15 +1,15 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Arena.Characters
+namespace arena_romeo.Characters
 {
-	public class PlayerMover : MonoBehaviour
+	public class Player : MonoBehaviour
 	{
 		[System.Serializable]
 		public class Settings
 		{
-			[Tooltip("Movement speed, in km/h.")]
-			[Min(0f)] public float Speed = 5f;
+			
+			[Min(0f)] public float Speed = 10f;
 		}
 
 		[System.Serializable]
@@ -27,7 +27,11 @@ namespace Arena.Characters
 
 		#region Fields
 
-		private const float KMH_TO_MS = 1f / 3.6f;
+		
+
+		private const float KMH_TO_MS = 1 / 3.6f;
+
+		
 
 		[SerializeField] private Settings _settings;
 		[SerializeField] private References _references;
@@ -36,7 +40,7 @@ namespace Arena.Characters
 		/// <summary>
 		/// The only player of the scene.
 		/// </summary>
-		public static PlayerMover Instance { get; private set; }
+		public static Player Instance { get; private set; }
 		public StateContainer State => _state;
 
 		private Camera _camera;
@@ -78,12 +82,14 @@ namespace Arena.Characters
 				Instance = null;
 		}
 
+		
+
 		void Update()
 		{
-			float deltaTime = Time.deltaTime;
+			float t = Time.deltaTime;
 
 			GetInputs();
-			Move(deltaTime);
+			Move(t);
 		}
 
 		#endregion
@@ -125,21 +131,19 @@ namespace Arena.Characters
 			_moveInput = _references.MoveAction.action.ReadValue<Vector2>();
 		}
 
-		private void Move(float deltaTime)
+		private void Move(float t)
 		{
 			Vector3 direction = ToWorldDirection(_moveInput);
 			_state.IsMoving = direction.sqrMagnitude > 0f;
-
+			
 			Vector3 velocity = direction * _settings.Speed * KMH_TO_MS;
-			_references.Controller.Move(velocity * deltaTime);
+			_references.Controller.Move(velocity * t);
+
 		}
 
-		/// <summary>
-		/// Converts a 2D input into a world direction on the ground, relative to the camera heading.
-		/// </summary>
+		
 		private Vector3 ToWorldDirection(Vector2 input)
 		{
-			// Only the camera rotation around the vertical axis is kept
 			Quaternion cameraHeading = Quaternion.Euler(0f, _camera.transform.eulerAngles.y, 0f);
 			return cameraHeading * new Vector3(input.x, 0f, input.y);
 		}
