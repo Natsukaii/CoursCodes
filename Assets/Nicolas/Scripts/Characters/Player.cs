@@ -1,4 +1,5 @@
 using Nicolas.Arena.Combat;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,7 +17,9 @@ namespace Nicolas.Arena.Characters
 		{
 			public CharacterController Controller;
 			public InputActionReference MoveAction;
-		}
+
+            public InputActionReference InteractAction;
+        }
 		[System.Serializable] public class StateContainer
 		{
 			public bool IsMoving;
@@ -29,11 +32,17 @@ namespace Nicolas.Arena.Characters
 		[SerializeField] private StateContainer _state;
 		[SerializeField] private Health _health;
 
-		public static Player Instance { get; private set; }
-		public StateContainer State => _state;
+        public Action OnInteract;
 
+
+		public static Player Instance { get; private set; }
+
+
+        public StateContainer State => _state;
+
+        private bool _isInteracting;
 		private Camera _camera;
-		private Vector2 _moveInput;
+        private Vector2 _moveInput;
 #endregion
 
 #region Unity Lifecycle
@@ -53,16 +62,20 @@ namespace Nicolas.Arena.Characters
 			_camera = Camera.main;
 			
 			_health.Initialize();
+
+
 		}
 
 		void OnEnable()
 		{
 			_references.MoveAction.action.Enable();
+			_references.InteractAction.action.Enable();
 		}
 
 		void OnDisable()
 		{
 			_references.MoveAction.action.Disable();
+			_references.InteractAction.action.Disable();
 		}
 
 		void OnDestroy()
@@ -80,6 +93,7 @@ namespace Nicolas.Arena.Characters
 
 			GetInputs();
 			Move(deltaTime);
+			Interact();
 		}
 #endregion
 
@@ -114,9 +128,10 @@ namespace Nicolas.Arena.Characters
 		private void GetInputs()
 		{
 			_moveInput = _references.MoveAction.action.ReadValue<Vector2>();
-		}
+            _isInteracting = _references.InteractAction.action.WasPerformedThisFrame();
+        }
 
-		private void Move(float deltaTime)
+        private void Move(float deltaTime)
 		{
 			Vector3 direction = ToWorldDirection(_moveInput);
 			_state.IsMoving = direction.sqrMagnitude > 0f;
@@ -124,6 +139,12 @@ namespace Nicolas.Arena.Characters
 			Vector3 velocity = direction * _settings.Speed * KMH_TO_MS;
 			_references.Controller.Move(velocity * deltaTime);
 		}
+
+        private void Interact()
+        {
+            if (_isInteracting)
+                OnInteract?.Invoke();
+        }
 
 		private Vector3 ToWorldDirection(Vector2 input)
 		{
