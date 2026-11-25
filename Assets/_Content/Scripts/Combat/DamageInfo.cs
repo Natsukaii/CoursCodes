@@ -5,6 +5,7 @@ namespace Arena.Combat
     /// <summary>
     /// Everything a hit carries: amount, type and source. Passed to IDamageable.TakeDamage.
     /// </summary>
+    [System.Serializable]
     public readonly struct DamageInfo
     {
         public readonly int Amount;
